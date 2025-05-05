@@ -1,6 +1,21 @@
 import requests # import pour les requêtes HTTP
 from bs4 import BeautifulSoup # import pour le parsing HTML
 from datetime import datetime
+from pymongo import MongoClient
+
+def save_to_mongo(data, db_name='blogdumoderateur', collection_name='articles'):
+    try:
+        # Connexion à MongoDB
+        client = MongoClient('mongodb://127.0.0.1:27017/')
+        db = client[db_name]
+        collection = db[collection_name]
+        
+        # Insertion des données dans la collection
+        collection.insert_one(data)
+        print("✅ Article enregistré dans MongoDB.")
+    except Exception as e:
+        print("\n❌ Erreur lors de l'enregistrement dans MongoDB :")
+        print(f"Erreur détaillée : {str(e)}")
 
 def scrape_article(url):
     headers = {
@@ -77,13 +92,23 @@ def scrape_article(url):
 
     return data
 
-
+""" 
 # TEST
 article_url = 'https://www.blogdumoderateur.com/instagram-ajoute-nouvelles-fonctionnalites-edits-polices-ecriture-effets-vocaux/'
 result = scrape_article(article_url)
 
 # Affichage
 for key, value in result.items():
-    print(f"{key.upper()} :\n{value}\n")
+    print(f"{key.upper()} :\n{value}\n") """
 
 
+if __name__ == '__main__':
+    article_url = 'https://www.blogdumoderateur.com/instagram-ajoute-nouvelles-fonctionnalites-edits-polices-ecriture-effets-vocaux/'
+    result = scrape_article(article_url)
+
+    # Affichage pour debug
+    for key, value in result.items():
+        print(f"{key.upper()} :\n{value}\n")
+
+    # Insertion dans la base
+    save_to_mongo(result)
